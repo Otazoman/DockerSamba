@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  # see: https://github.com/Fmstrat/samba-domain
+  ad_main_samba:
+    build: ./image
+    image: mainsamba
+    container_name: main_samba_ad
+    volumes:
+      - ./data/:/var/lib/samba
+      - ./config/samba:/etc/samba/external
+      - ./log:/var/log/samba
+    environment:
+      - DOMAIN=${AD_DOMAIN}
+      - DOMAINPASS=${AD_DOMAIN_PASSWORD}
+      - DNSFORWARDER=${EXT_DNS1_ADDR}
+      - HOSTIP=${ADS_ADDR}
+      - KDCMAIN=${MAIN_AD}
+      - KDCSUB=${SUB_AD}
+      - INSECURELDAP=true
+      - TZ=Asia/Tokyo
+    network_mode: host
+    dns_search:
+      - ${DOMAIN_NAME}
+    dns:
+      - ${ADS_ADDR}
+      - ${EXT_DNS1_ADDR}
+      - ${EXT_DNS2_ADDR}
+    extra_hosts:
+      - ${HOST_NAME}.${DOMAIN_NAME}:${ADS_ADDR}
+    hostname: ${HOST_NAME}
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    privileged: true
+    restart: always
+
